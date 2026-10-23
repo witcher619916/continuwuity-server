@@ -1,0 +1,5 @@
+# Real secrets - never commit
+cloudflared.env
+*.env
+!*.env.example
+.env

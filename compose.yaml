@@ -1,0 +1,119 @@
+volumes:
+  redis-data:
+  matrix_caddy_data:
+  matrix_caddy_config:
+  matrix-db:
+
+
+networks:
+  unbound_resolver:
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.10.10.0/24"
+
+services:
+  unbound:
+    container_name: unbound
+    image: madnuttah/unbound:latest
+    volumes:
+      - ./unbound.conf:/usr/local/unbound/unbound.conf:rw
+#     - ./conf.d/:/usr/local/unbound/conf.d/:rw
+#     - ./log.d/unbound.log:/usr/local/unbound/log.d/unbound.log:rw
+#     - ./zones.d/:/usr/local/unbound/zones.d/:rw
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Copenhagen
+      - HEALTHCHECK_PORT=53
+      - EXTENDED_HEALTHCHECK=true
+    healthcheck:
+      test: /usr/local/unbound/sbin/healthcheck.sh
+      interval: 60s
+      retries: 5
+      start_period: 15s
+      timeout: 30s
+    cap_add: 
+      - NET_BIND_SERVICE
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      unbound_resolver:
+        ipv4_address: 10.10.10.20
+
+  redis:
+    container_name: unbound-db
+    restart: unless-stopped
+    image: redis:alpine
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - redis-data:/data
+    networks:
+      unbound_resolver:
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+
+  caddy:
+    image: caddy:2.11.4
+    container_name: matrix-caddy
+    restart: unless-stopped
+    networks:
+      - unbound_resolver
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - matrix_caddy_data:/data
+      - matrix_caddy_config:/config
+
+
+  matrix:
+    image: "forgejo.ellis.link/continuwuation/continuwuity:latest"
+    restart: unless-stopped
+    command: /sbin/conduwuit
+    stdin_open: true
+    tty: true
+    volumes:
+      - matrix-db:/var/lib/continuwuity
+      - ./matrix-resolv.conf:/etc/resolv.conf # use custom resolvers rather than Docker's
+      # - ./continuwuity.toml:/etc/continuwuity.toml
+    environment:
+      CONTINUWUITY_SERVER_NAME: salo-ua.com
+      CONTINUWUITY_DATABASE_PATH: /var/lib/continuwuity
+      CONTINUWUITY_ADDRESS: 0.0.0.0
+      CONTINUWUITY_PORT: 8008
+      CONTINUWUITY_ADMIN_CONSOLE_AUTOMATIC: true
+      CONTINUWUITY_DNS_CACHE_ENTRIES: 0
+      CONTINUWUITY_CACHE_CAPACITY_MODIFIER: 4.0
+      CONTINUWUITY_STREAM_AMPLIFICATION: 2048
+      CONTINUWUITY_IP_LOOKUP_STRATEGY: 1
+      CONTINUWUITY_TRUSTED_SERVERS: '["codestorm.net","starstruck.systems","unredacted.org","matrix.org"]'
+      CONTINUWUITY_LOG: 'debug'
+      CONTINUWUITY_MATRIX_RTC__FOCI: '[{ type = "livekit", livekit_service_url = "https://livekit.salo-ua.com" }]'
+      # CONTINUWUITY_CONFIG: '/etc/continuwuity.toml' # Uncomment if you mapped config toml above
+
+      ## Serve .well-known files to tell others to reach Continuwuity on port :443
+      CONTINUWUITY_WELL_KNOWN: |
+          {
+          client=https://matrix.salo-ua.com,
+          server=matrix.salo-ua.com:443
+          }
+    depends_on:
+      unbound:
+        condition: service_healthy
+    networks:
+      - unbound_resolver
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: matrix-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    env_file: "cloudflared.env"
+    networks:
+      - unbound_resolver
+
