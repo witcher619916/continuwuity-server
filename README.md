@@ -58,7 +58,7 @@ flowchart LR
 | `unbound` | `madnuttah/unbound` | DNSSEC-validating recursive resolver with a local copy of the root zone (RFC 8806) |
 | `redis` | `redis:alpine` | Persistent cache backend for Unbound (`cachedb` module), password-protected and LRU-evicting |
 
-On the VPS (configuration not included in this repo): the LiveKit SFU and `lk-jwt-service`, which issues LiveKit tokens to Matrix users.
+On the VPS (configuration in [`livekit/`](livekit/)): the LiveKit SFU and `lk-jwt-service`, which issues LiveKit tokens to Matrix users.
 
 ## Design decisions
 
@@ -79,12 +79,15 @@ On the VPS (configuration not included in this repo): the LiveKit SFU and `lk-jw
 ├── redis.conf                 # Redis config (password, eviction)
 ├── matrix-resolv.conf         # points Continuwuity at Unbound
 ├── cloudflared.env.example    # template for the tunnel token (real file is git-ignored)
+├── livekit/                   # VPS side, deployed separately
+│   ├── compose.yaml           # LiveKit SFU + lk-jwt-service
+│   └── livekit.yaml           # LiveKit server config (ports, API keys)
 └── .gitignore                 # keeps real secrets out of Git
 ```
 
 ## Deploying your own
 
-Prerequisites: a Linux host with Docker and Docker Compose, a domain managed in Cloudflare, and (for calls) a VPS running LiveKit and `lk-jwt-service`.
+Prerequisites: a Linux host with Docker and Docker Compose, a domain managed in Cloudflare, and (for calls) a VPS for LiveKit (see step 6).
 
 1. **Create a Cloudflare Tunnel** in Zero Trust → Networks → Tunnels. Add public hostnames for `matrix.<domain>`, `<domain>` and `livekit.<domain>`, all pointing at the Caddy container (`http://matrix-caddy:80`).
 2. **Add the tunnel token:**
@@ -99,20 +102,25 @@ Prerequisites: a Linux host with Docker and Docker Compose, a domain managed in 
    docker compose up -d
    docker compose ps      # wait until unbound and redis report healthy
    ```
-6. **Check federation** with the [Matrix Federation Tester](https://federationtester.matrix.org/).
+6. **Set up LiveKit on the VPS** (optional, for calls). Copy `livekit/` to the VPS, then:
+   ```bash
+   docker run --rm livekit/livekit-server generate-keys
+   ```
+   Put the generated pair in `livekit.yaml` (`keys:`) and in `compose.yaml` (`LIVEKIT_KEY`, `LIVEKIT_SECRET`), replace `<VPS_MESH_IP>` and the domain, and run `docker compose up -d`. Open 7881/tcp and 50100–50200/udp on the VPS firewall for media.
+7. **Check federation** with the [Matrix Federation Tester](https://federationtester.matrix.org/).
 
 The Continuwuity admin console is enabled. Reach it with `docker attach <matrix container>` and detach with `Ctrl-P Ctrl-Q`.
 
 ## Security notes
 
-- No secrets are committed: the tunnel token lives in a git-ignored `cloudflared.env`, and the passwords in this repo are placeholders.
+- No secrets are committed: the tunnel token lives in a git-ignored `cloudflared.env`, and the passwords and LiveKit API keys in this repo are placeholders.
 - Unbound and Redis are reachable only on the internal Docker network and are never published to the host.
 - Unbound hides its identity and version, refuses `ANY` queries, and hardens against DNSSEC stripping and cache poisoning (`harden-*`, `qname-minimisation`, `aggressive-nsec`).
-- No ports are published on the host at all: the only way in is the outbound Cloudflare Tunnel, and the home IP address isn't published in DNS.
+- No ports are published on the home server at all: the only way in is the outbound Cloudflare Tunnel, and the home IP address isn't published in DNS.
+- On the VPS, `lk-jwt-service` is published only on the Cloudflare Mesh address, so it can't be reached from the VPS's public IP. LiveKit runs with host networking because WebRTC media needs its UDP port range open to the internet.
 
 ## Roadmap
 
 - Export Continuwuity metrics to the homelab's existing Prometheus + Grafana monitoring
 - Centralised logs with Grafana Alloy + Loki
-- Add the VPS-side LiveKit configuration to this repo
 
