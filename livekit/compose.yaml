@@ -6,7 +6,7 @@ networks:
 
 services:
   lk-jwt-service:
-    image: ghcr.io/element-hq/lk-jwt-service:latest
+    image: ghcr.io/element-hq/lk-jwt-service:0.9.0
     container_name: lk-jwt-service
     environment:
       - LIVEKIT_JWT_BIND=:8081
@@ -20,7 +20,7 @@ services:
       - "<VPS_MESH_IP>:8081:8081" # reachable only over Cloudflare Mesh
 
   livekit:
-    image: livekit/livekit-server:latest
+    image: livekit/livekit-server:v1.13
     container_name: livekit
     command: --config /etc/livekit.yaml
     restart: unless-stopped
