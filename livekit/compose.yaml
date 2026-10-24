@@ -1,0 +1,35 @@
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-livekit
+
+services:
+  lk-jwt-service:
+    image: ghcr.io/element-hq/lk-jwt-service:latest
+    container_name: lk-jwt-service
+    environment:
+      - LIVEKIT_JWT_BIND=:8081
+      - LIVEKIT_URL=wss://livekit.salo-ua.com # your LiveKit domain
+      - LIVEKIT_FULL_ACCESS_HOMESERVERS=salo-ua.com # your server_name
+      # Must match the key/secret pair in livekit.yaml
+      - LIVEKIT_KEY=<LIVEKIT_API_KEY>
+      - LIVEKIT_SECRET=<LIVEKIT_API_SECRET>
+    restart: unless-stopped
+    ports:
+      - "<VPS_MESH_IP>:8081:8081" # reachable only over Cloudflare Mesh
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit
+    command: --config /etc/livekit.yaml
+    restart: unless-stopped
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    network_mode: "host" # /!\ LiveKit binds to all addresses by default.
+    # Make sure port 7880 is blocked by your firewall to prevent access bypassing your reverse proxy
+    # Alternatively, uncomment the lines below and comment `network_mode: "host"` above to specify port mappings.
+#    ports:
+#      - "127.0.0.1:7880:7880/tcp"
+#      - "7881:7881/tcp"
+#      - "50100-50200:50100-50200/udp"
