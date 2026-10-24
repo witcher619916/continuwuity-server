@@ -1,0 +1,41 @@
+name: Syntax check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  syntax_check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The real env file is git-ignored, but Compose refuses to load
+      # the project if an env_file is missing
+      - name: rename cloudflared.env.example to cloudflared.env to resolve the tunnel variables
+        run: cp cloudflared.env.example cloudflared.env
+
+      # <VPS_MESH_IP> is not a valid IP, so swap in a documentation
+      # dummy IP address. This only changes the runner's copy.
+      - name: Fill in placeholder IPs
+        run: sed -i 's/<VPS_MESH_IP>/192.0.2.1/g' livekit/compose.yaml Caddyfile
+
+      - name: check server compose file
+        run: docker compose config --quiet
+
+      - name: check livekit compose file
+        working-directory: livekit
+        run: docker compose config --quiet
+
+      - name: validate Caddyfile
+        run: >
+          docker run --rm 
+          -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro"
+          caddy:2.11.4
+          caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      
