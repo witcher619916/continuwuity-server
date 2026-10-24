@@ -60,7 +60,7 @@ services:
 
 
   caddy:
-    image: caddy:2.11.4
+    image: caddy:2.11.6
     container_name: matrix-caddy
     restart: unless-stopped
     networks:
