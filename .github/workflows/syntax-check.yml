@@ -34,8 +34,6 @@ jobs:
 
       - name: validate Caddyfile
         run: >
-          docker run --rm 
-          -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro"
-          caddy:2.11.4
+          docker compose run --rm --no-deps caddy
           caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
       
