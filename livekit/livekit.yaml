@@ -1,0 +1,22 @@
+port: 7880
+bind_addresses:
+  - ""
+rtc:
+  tcp_port: 7881
+  port_range_start: 50100
+  port_range_end: 50200
+  use_external_ip: true
+  enable_loopback_candidate: false
+  interfaces:
+    excludes:
+      - docker0
+      - CloudflareWARP
+keys:
+  # Generate a key/secret pair with:
+  #   docker run --rm livekit/livekit-server generate-keys
+  # The same pair must be set in compose.yaml for lk-jwt-service.
+  <LIVEKIT_API_KEY>: <LIVEKIT_API_SECRET>
+
+# do not create rooms by default
+room:
+  auto_create: false
