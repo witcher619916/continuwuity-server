@@ -11,11 +11,9 @@ rtc:
     excludes:
       - docker0
       - CloudflareWARP
-keys:
-  # Generate a key/secret pair with:
-  #   docker run --rm livekit/livekit-server generate-keys
-  # The same pair must be set in compose.yaml for lk-jwt-service.
-  <LIVEKIT_API_KEY>: <LIVEKIT_API_SECRET>
+
+# API keys are not set here: they are passed in through the LIVEKIT_KEYS
+# environment variable (see compose.yaml and secrets.enc.env)
 
 # do not create rooms by default
 room:

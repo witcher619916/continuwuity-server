@@ -2,4 +2,6 @@
 cloudflared.env
 *.env
 !*.env.example
+# SOPS-encrypted files are safe to commit
+!*.enc.env
 .env

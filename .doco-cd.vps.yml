@@ -1,0 +1,5 @@
+# Deployed by the doco-cd instance on the VPS (poll config: target: vps)
+name: livekit # must match the current compose project name on the VPS (docker compose ls)
+working_dir: livekit
+env_files:
+  - secrets.enc.env # decrypted by doco-cd, used for ${...} in compose.yaml

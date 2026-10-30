@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: livekit/.*\.env$
+    age: age1nayxumzg587y5l3jgasx8ssgd9ztxydylnhwkkem8fey9pd6ccgsjugeqr,age149jwlwtdu4w9w404vsvqp3arx3fgrjserzteu89jf4tgpezjsfcsv7kzx7
