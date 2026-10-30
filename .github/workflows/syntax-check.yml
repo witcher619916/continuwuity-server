@@ -23,17 +23,22 @@ jobs:
       # <VPS_MESH_IP> is not a valid IP, so swap in a documentation
       # dummy IP address. This only changes the runner's copy.
       - name: Fill in placeholder IPs
-        run: sed -i 's/<VPS_MESH_IP>/192.0.2.1/g' livekit/compose.yaml Caddyfile
+        run: sed -i 's/<VPS_MESH_IP>/192.0.2.1/g' Caddyfile
 
       - name: check server compose file
         run: docker compose config --quiet
 
+      # The real values are SOPS-encrypted and only decrypted on the VPS,
+      # so give Compose dummy values to check the file's structure
       - name: check livekit compose file
         working-directory: livekit
+        env:
+          LIVEKIT_KEY: ci-dummy-key
+          LIVEKIT_SECRET: ci-dummy-secret
+          VPS_MESH_IP: 192.0.2.1
         run: docker compose config --quiet
 
       - name: validate Caddyfile
         run: >
           docker compose run --rm --no-deps caddy
           caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
-      
