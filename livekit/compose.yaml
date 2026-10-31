@@ -22,7 +22,7 @@ services:
       - "${VPS_MESH_IP:?missing}:8081:8081" # reachable only over Cloudflare Mesh
 
   livekit:
-    image: livekit/livekit-server:v1.13.10
+    image: livekit/livekit-server:v1.13.11
     container_name: livekit
     command: --config /etc/livekit.yaml
     restart: unless-stopped
