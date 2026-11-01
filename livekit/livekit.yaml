@@ -11,6 +11,8 @@ rtc:
     excludes:
       - docker0
       - CloudflareWARP
+      - br-livekit
+      - br-doco-cd
 
 # API keys are not set here: they are passed in through the LIVEKIT_KEYS
 # environment variable (see compose.yaml and secrets.enc.env)
