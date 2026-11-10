@@ -1,0 +1,11 @@
+# Template for unbound-cachedb.enc.conf - from the repo root, fill in and encrypt:
+#   cp unbound-cachedb.conf.example unbound-cachedb.conf
+#   sops encrypt unbound-cachedb.conf > unbound-cachedb.enc.conf
+#   rm unbound-cachedb.conf
+cachedb:
+  backend: "redis"
+  redis-server-host: unbound-db # The hostname or IP of your Redis server
+  redis-server-port: 6379
+  redis-expire-records: yes
+  # Must match REDIS_PASSWORD in secrets.enc.env
+  redis-server-password: "<REDIS_PASSWORD>"

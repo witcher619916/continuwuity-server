@@ -4,4 +4,6 @@ cloudflared.env
 !*.env.example
 # SOPS-encrypted files are safe to commit
 !*.enc.env
+# Plain-text Unbound cachedb settings (commit only unbound-cachedb.enc.conf)
+unbound-cachedb.conf
 .env
