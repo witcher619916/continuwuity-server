@@ -1,0 +1,5 @@
+# Deployed by the doco-cd instance on the home server (poll config: target: home)
+name: unbound # must match the current compose project name (docker compose ls)
+working_dir: .
+env_files:
+  - secrets.enc.env # decrypted by doco-cd, used for ${...} in compose.yaml

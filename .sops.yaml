@@ -1,3 +1,5 @@
 creation_rules:
   - path_regex: livekit/.*\.env$
-    age: age1nayxumzg587y5l3jgasx8ssgd9ztxydylnhwkkem8fey9pd6ccgsjugeqr,age149jwlwtdu4w9w404vsvqp3arx3fgrjserzteu89jf4tgpezjsfcsv7kzx7
+    age: age149jwlwtdu4w9w404vsvqp3arx3fgrjserzteu89jf4tgpezjsfcsv7kzx7,age1nayxumzg587y5l3jgasx8ssgd9ztxydylnhwkkem8fey9pd6ccgsjugeqr
+  - path_regex: ^(secrets(\.enc)?\.env|unbound-cachedb(\.enc)?\.conf)$
+    age: age15s3t09yxycaaevvcmtrjhawfrvfcv9j326mvh0s27ehup77geenq8fjkn4,age1nayxumzg587y5l3jgasx8ssgd9ztxydylnhwkkem8fey9pd6ccgsjugeqr
