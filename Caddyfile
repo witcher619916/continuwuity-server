@@ -8,7 +8,7 @@ http://salo-ua.com {
 http://livekit.salo-ua.com {
 
     # for lk-jwt-service
-    @lk-jwt-service path /sfu/get* /healthz* /get_token*
+    @lk-jwt-service path /sfu/get* /healthz* /get_token* /delegate_delayed_leave*
     route @lk-jwt-service {
         reverse_proxy {$VPS_MESH_IP}:8081
     }
