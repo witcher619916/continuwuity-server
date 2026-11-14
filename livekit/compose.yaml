@@ -9,7 +9,7 @@ networks:
 # ":?missing" makes the deploy fail instead of starting with blank secrets
 services:
   lk-jwt-service:
-    image: ghcr.io/element-hq/lk-jwt-service:0.9.0
+    image: ghcr.io/element-hq/lk-jwt-service:0.10.0
     container_name: lk-jwt-service
     environment:
       LIVEKIT_JWT_BIND: ":8081"
