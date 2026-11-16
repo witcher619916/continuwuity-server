@@ -78,7 +78,7 @@ services:
 
 
   matrix:
-    image: jadedblueeyes/continuwuity:v26.9.1
+    image: jadedblueeyes/continuwuity:v26.9.3
     restart: unless-stopped
     command: /sbin/conduwuit
     stdin_open: true
